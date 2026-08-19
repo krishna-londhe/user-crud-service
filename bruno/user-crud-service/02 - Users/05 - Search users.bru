@@ -1,0 +1,44 @@
+meta {
+  name: 05 - Search users
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{BASE_URL}}/users/search?firstName={{FIRST_NAME}}&isActive=true&orderBy=CreatedAt&order=descending&pageIndex=0&itemsPerPage=25
+  body: none
+  auth: none
+}
+
+params:query {
+  firstName: {{FIRST_NAME}}
+  isActive: true
+  orderBy: CreatedAt
+  order: descending
+  pageIndex: 0
+  itemsPerPage: 25
+  ~lastName: {{LAST_NAME}}
+  ~email: {{EMAIL}}
+  ~phone: {{PHONE_NUMBER}}
+  ~userName: {{USER_NAME}}
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("Users search results are returned", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('Users');
+      expect(jsonRes.Data.Users).to.have.property('Items');
+      expect(jsonRes.Data.Users).to.have.property('TotalCount');
+      expect(jsonRes.Data.Users.TotalCount).to.be.greaterThan(0);
+  });
+}
+
+docs {
+  Searches users with optional filters and pagination.
+}

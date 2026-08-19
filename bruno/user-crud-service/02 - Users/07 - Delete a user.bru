@@ -1,0 +1,24 @@
+meta {
+  name: 07 - Delete a user
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{BASE_URL}}/users/{{USER_ID}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+      expect(jsonRes.Data.Deleted).to.eql(true);
+  });
+}
+
+docs {
+  Soft-deletes (paranoid) the user created in request 01.
+}

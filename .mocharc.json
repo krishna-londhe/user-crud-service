@@ -1,0 +1,12 @@
+{
+    "require": [
+        "ts-node/register/transpile-only",
+        "dotenv/config"
+    ],
+    "extension": ["ts"],
+    "spec": "tests/**/*.test.ts",
+    "file": "tests/init.ts",
+    "timeout": 30000,
+    "colors": true,
+    "exit": true
+}

@@ -1,0 +1,36 @@
+meta {
+  name: 02 - Create a user - duplicate email - should fail
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/users
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+      "FirstName": "{{FIRST_NAME}}",
+      "LastName": "{{LAST_NAME}}",
+      "Email": "{{EMAIL}}",
+      "Password": "{{PASSWORD}}"
+  }
+}
+
+tests {
+  test("Request fails with conflict", function () {
+      expect(res.getStatus()).to.equal(409);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('failure');
+  });
+}
+
+docs {
+  Re-uses the email from request 01. Should be rejected since the repo's `exists()` check enforces uniqueness on Email/Phone/UserName.
+}

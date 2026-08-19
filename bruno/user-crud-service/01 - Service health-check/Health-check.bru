@@ -1,0 +1,23 @@
+meta {
+  name: Health-check
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{BASE_URL}}/health
+  body: none
+  auth: none
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+}
+
+docs {
+  Confirms the service is up and reachable.
+}

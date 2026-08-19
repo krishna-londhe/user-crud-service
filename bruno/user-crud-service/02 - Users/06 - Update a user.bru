@@ -1,0 +1,40 @@
+meta {
+  name: 06 - Update a user
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{BASE_URL}}/users/{{USER_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+      "LastName": "Updated-Lastname",
+      "IsActive": false
+  }
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("User is updated", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data.User.LastName).to.eql('Updated-Lastname');
+      expect(jsonRes.Data.User.IsActive).to.eql(false);
+  });
+}
+
+docs {
+  Partially updates a user. Only fields present in the body are changed.
+}

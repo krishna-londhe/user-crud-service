@@ -1,0 +1,23 @@
+meta {
+  name: 08 - Get deleted user by id - should fail
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{BASE_URL}}/users/{{USER_ID}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Request fails with not-found", function () {
+      expect(res.getStatus()).to.equal(404);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('failure');
+  });
+}
+
+docs {
+  Confirms the soft-deleted user (request 07) is no longer retrievable.
+}

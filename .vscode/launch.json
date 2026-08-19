@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "user-crud-service: Debug server.ts (ts-node)",
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register/transpile-only",
+                "-r",
+                "dotenv/config"
+            ],
+            "args": [
+                "${workspaceFolder}/user-crud-service/src/server.ts"
+            ],
+            "cwd": "${workspaceFolder}/user-crud-service",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "user-crud-service: Debug dist/server.js (compiled)",
+            "program": "${workspaceFolder}/user-crud-service/dist/server.js",
+            "cwd": "${workspaceFolder}/user-crud-service",
+            "outFiles": [
+                "${workspaceFolder}/user-crud-service/dist/**/*.js"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}

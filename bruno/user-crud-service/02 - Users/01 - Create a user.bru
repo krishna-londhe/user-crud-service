@@ -1,0 +1,91 @@
+meta {
+  name: 01 - Create a user
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/users
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+      "FirstName": "{{FIRST_NAME}}",
+      "LastName": "{{LAST_NAME}}",
+      "Email": "{{EMAIL}}",
+      "Phone": "{{PHONE_COUNTRY_CODE}}-{{PHONE_NUMBER}}",
+      "UserName": "{{USER_NAME}}",
+      "Password": "{{PASSWORD}}"
+  }
+}
+
+script:pre-request {
+  //Randomly generated user details
+
+  var first_names = ['Jerry', 'Tom', 'Garfield', 'Jerome', 'Hobbes', 'Calvin', 'Nate', 'John', 'Abigale', 'Erin'];
+  var last_names = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor'];
+
+  var first = first_names[Math.floor(Math.random() * first_names.length)];
+  var last = last_names[Math.floor(Math.random() * last_names.length)];
+  var phonenumber = (Math.floor(Math.random() * 9000000000) + 1000000000).toString();
+  var random_postfix = (Math.floor(Math.random() * 90000) + 10000).toString();
+  var email = first + '.' + random_postfix + '.' + last + '@gmail.com';
+  var userName = (first + last + random_postfix).toLowerCase();
+  var password = 'Test@123';
+
+  bru.setEnvVar('FIRST_NAME', first);
+  bru.setEnvVar('LAST_NAME', last);
+  bru.setEnvVar('PHONE_NUMBER', phonenumber);
+  bru.setEnvVar('PHONE_COUNTRY_CODE', '+91');
+  bru.setEnvVar('EMAIL', email);
+  bru.setEnvVar('USER_NAME', userName);
+  bru.setEnvVar('PASSWORD', password);
+}
+
+tests {
+  var jsonRes = res.getBody();
+
+  try {
+      bru.setEnvVar("USER_ID", jsonRes.Data.User.id);
+  }
+  catch (error) {
+      console.log(error.message);
+  }
+
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(201);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("User is created", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data).to.have.property('User');
+      expect(jsonRes.Data.User).to.not.be.empty;
+      expect(jsonRes.Data.User).to.have.property('id');
+      expect(jsonRes.Data.User).to.have.property('Email');
+      expect(jsonRes.Data.User).to.not.have.property('Password');
+  });
+}
+
+docs {
+  Creates a new user. `Email` and `Password` are mandatory. `Phone` must be in '<countryCode>-<number>' format, e.g. '+91-9876543210'.
+
+  Sample body:
+  ```
+  {
+      "FirstName": "John",
+      "LastName": "Doe",
+      "Email": "john.doe@gmail.com",
+      "Phone": "+91-9876543210",
+      "UserName": "johndoe123",
+      "Password": "Test@123"
+  }
+  ```
+}

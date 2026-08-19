@@ -1,0 +1,29 @@
+meta {
+  name: 03 - Get user by id
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BASE_URL}}/users/{{USER_ID}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Request is successfull", function () {
+      expect(res.getStatus()).to.equal(200);
+      var jsonRes = res.getBody();
+      expect(jsonRes.Status).to.eql('success');
+  });
+
+  test("User is returned", function () {
+      var jsonRes = res.getBody();
+      expect(jsonRes.Data.User.id).to.eql(bru.getEnvVar('USER_ID'));
+      expect(jsonRes.Data.User.Email).to.eql(bru.getEnvVar('EMAIL'));
+  });
+}
+
+docs {
+  Retrieves a user by id.
+}
