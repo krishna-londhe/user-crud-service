@@ -59,10 +59,10 @@ jobs:
 
     # Environment variables for Node.js application (must match src/config/configuration.manager.ts)
     env:
-      NODE_ENV: test
-      DB_HOST: 127.0.0.1
-      DB_PORT: 3306
-      DB_NAME: test_db
+      NODE_ENV: ${{vars.NODE_ENV}}
+      DB_HOST: ${{ vars.MYSQL_HOST }}
+      DB_PORT: ${{ vars.MYSQL_PORT }}
+      DB_NAME: ${{ vars.MYSQL_DATABASE }}
       DB_USERNAME: ${{ secrets.MYSQL_USER }}
       DB_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       DB_DIALECT: mysql
@@ -75,7 +75,7 @@ jobs:
 
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE: test_db
+          MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE }}
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
 
