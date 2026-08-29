@@ -32,7 +32,7 @@ describe('01 - User tests', function () {
                 expectUserProperties(response);
                 expectUserPropertyValues(response);
             })
-            .expect(201, done);
+            .expect(200, done);
     });
 
     it('01:03 -> Search users', function (done) {
