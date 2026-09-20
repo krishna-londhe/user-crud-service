@@ -135,27 +135,27 @@ jobs:
           path: mochawesome-report/
           retention-days: 30
 
-      # - name: Email Test Report Link
-      #   if: always()
-      #   uses: dawidd6/action-send-mail@v3
-      #   with:
-      #     server_address: smtp.gmail.com
-      #     server_port: 465
-      #     username: ${{ secrets.MAIL_USERNAME }}
-      #     password: ${{ secrets.MAIL_PASSWORD }}
-      #     from: user-crud-service CI <${{ secrets.MAIL_USERNAME }}>
-      #     to: ${{ secrets.REPORT_RECIPIENT_EMAIL }}
-      #     subject: "[user-crud-service] Test report - ${{ github.ref_name }} - ${{ job.status }}"
-      #     body: |
-      #       Test run finished for user-crud-service.
+      - name: Email Test Report Link
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: user-crud-service CI <${{ secrets.MAIL_USERNAME }}>
+          to: ${{ secrets.REPORT_RECIPIENT_EMAIL }}
+          subject: "[user-crud-service] Test report - ${{ github.ref_name }} - ${{ job.status }}"
+          body: |
+            Test run finished for user-crud-service.
 
-      #       Branch:  ${{ github.ref_name }}
-      #       Commit:  ${{ github.sha }}
-      #       Trigger: ${{ github.actor }}
-      #       Status:  ${{ job.status }}
+            Branch:  ${{ github.ref_name }}
+            Commit:  ${{ github.sha }}
+            Trigger: ${{ github.actor }}
+            Status:  ${{ job.status }}
 
-      #       Download the test report (mochawesome-report artifact) from the run page:
-      #       https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Download the test report (mochawesome-report artifact) from the run page:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   docker:
     name: Build & Push Docker Image (dev)
