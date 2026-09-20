@@ -79,6 +79,9 @@ jobs:
       DB_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       DB_DIALECT: mysql
       DB_SYNCHRONIZE: true
+      CLIENT_API_KEY: ${{ secrets.CLIENT_API_KEY }}
+      USER_ACCESS_TOKEN_SECRET: ${{ secrets.USER_ACCESS_TOKEN_SECRET }}
+      ACCESS_TOKEN_EXPIRES_IN_SECONDS: ${{ secrets.ACCESS_TOKEN_EXPIRES_IN_SECONDS }}
 
     # MySQL container service
     services:
@@ -122,7 +125,37 @@ jobs:
           done
 
       - name: Run Test Cases
-        run: npm test
+        run: npm run test:report
+
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mochawesome-report
+          path: mochawesome-report/
+          retention-days: 30
+
+      # - name: Email Test Report Link
+      #   if: always()
+      #   uses: dawidd6/action-send-mail@v3
+      #   with:
+      #     server_address: smtp.gmail.com
+      #     server_port: 465
+      #     username: ${{ secrets.MAIL_USERNAME }}
+      #     password: ${{ secrets.MAIL_PASSWORD }}
+      #     from: user-crud-service CI <${{ secrets.MAIL_USERNAME }}>
+      #     to: ${{ secrets.REPORT_RECIPIENT_EMAIL }}
+      #     subject: "[user-crud-service] Test report - ${{ github.ref_name }} - ${{ job.status }}"
+      #     body: |
+      #       Test run finished for user-crud-service.
+
+      #       Branch:  ${{ github.ref_name }}
+      #       Commit:  ${{ github.sha }}
+      #       Trigger: ${{ github.actor }}
+      #       Status:  ${{ job.status }}
+
+      #       Download the test report (mochawesome-report artifact) from the run page:
+      #       https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   docker:
     name: Build & Push Docker Image (dev)
