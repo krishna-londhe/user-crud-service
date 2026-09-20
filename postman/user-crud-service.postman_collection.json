@@ -1,10 +1,203 @@
 {
   "info": {
     "_postman_id": "d9dec9b4-905a-4e12-8c0c-b0fb6e1c64fa",
-    "name": "New Collection",
+    "name": "user-crud-service",
+    "description": "User CRUD API. Every request needs the x-api-key header (client auth). Routes other than Create User and Login also need the Bearer access token returned by Login.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "22334730",
     "_collection_link": "https://go.postman.co/collection/22334730-d9dec9b4-905a-4e12-8c0c-b0fb6e1c64fa?source=collection_link"
   },
-  "item": []
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/health",
+              "host": [ "{{BASE_URL}}" ],
+              "path": [ "health" ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.environment.set('ACCESS_TOKEN', json.Data.AccessToken);",
+                  "    console.log('Saved ACCESS_TOKEN to environment.');",
+                  "} else {",
+                  "    console.log('Login failed, ACCESS_TOKEN not updated:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-api-key", "value": "{{API_KEY}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"UserNameOrEmail\": \"{{EMAIL}}\",\n    \"Password\": \"{{PASSWORD}}\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/login",
+              "host": [ "{{BASE_URL}}" ],
+              "path": [ "auth", "login" ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Generate unique test data on every run so Email/Phone/UserName",
+                  "// (all unique columns) don't collide with a previous run.",
+                  "const stamp = Date.now();",
+                  "pm.environment.set('FIRST_NAME', 'Test');",
+                  "pm.environment.set('LAST_NAME', 'User');",
+                  "pm.environment.set('EMAIL', `test.user.${stamp}@example.com`);",
+                  "pm.environment.set('USER_NAME', `testuser${stamp}`);",
+                  "pm.environment.set('PHONE_NUMBER', `9${stamp.toString().slice(-9)}`);",
+                  "pm.environment.set('PASSWORD', 'Test@12345');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    pm.environment.set('USER_ID', json.Data.User.id);",
+                  "    console.log('Saved USER_ID to environment:', json.Data.User.id);",
+                  "} else {",
+                  "    console.log('Create user failed, USER_ID not updated:', pm.response.text());",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-api-key", "value": "{{API_KEY}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"FirstName\": \"{{FIRST_NAME}}\",\n    \"LastName\": \"{{LAST_NAME}}\",\n    \"Email\": \"{{EMAIL}}\",\n    \"Phone\": \"{{PHONE_COUNTRY_CODE}}-{{PHONE_NUMBER}}\",\n    \"UserName\": \"{{USER_NAME}}\",\n    \"Password\": \"{{PASSWORD}}\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/users",
+              "host": [ "{{BASE_URL}}" ],
+              "path": [ "users" ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-api-key", "value": "{{API_KEY}}" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/users/{{USER_ID}}",
+              "host": [ "{{BASE_URL}}" ],
+              "path": [ "users", "{{USER_ID}}" ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-api-key", "value": "{{API_KEY}}" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/users/search?firstName={{FIRST_NAME}}",
+              "host": [ "{{BASE_URL}}" ],
+              "path": [ "users", "search" ],
+              "query": [
+                { "key": "firstName", "value": "{{FIRST_NAME}}" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-api-key", "value": "{{API_KEY}}" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"LastName\": \"Updated\",\n    \"IsActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/users/{{USER_ID}}",
+              "host": [ "{{BASE_URL}}" ],
+              "path": [ "users", "{{USER_ID}}" ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "x-api-key", "value": "{{API_KEY}}" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/users/{{USER_ID}}",
+              "host": [ "{{BASE_URL}}" ],
+              "path": [ "users", "{{USER_ID}}" ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
 }

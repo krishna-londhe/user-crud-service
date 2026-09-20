@@ -4,6 +4,8 @@ import { Injector } from './startup/injector';
 import { DatabaseConnector_Sequelize } from './database/sql/sequelize/database.connector.sequelize';
 import { Logger } from './common/logger';
 import { register as registerUserRoutes } from './api/users/user.routes';
+import { register as registerAuthRoutes } from './api/auth/auth.routes';
+import { authenticateClient } from './auth/authenticate.client.middleware';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -48,11 +50,18 @@ export class Application {
     };
 
     private setRoutes = (): void => {
-        registerUserRoutes(this.app);
-
+        // Registered before the client-key check below, so health checks
+        // (used by load balancers / container orchestrators) stay unauthenticated.
         this.app.get('/api/v1/health', (_req, res) => {
             res.status(200).send({ Status: 'success', Message: 'Service is up and running.' });
         });
+
+        // Client (app-level) authentication - compulsory for every route registered
+        // below this point.
+        this.app.use(authenticateClient);
+
+        registerAuthRoutes(this.app);
+        registerUserRoutes(this.app);
 
         Logger.instance().log('Routes registered.');
     };

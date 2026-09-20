@@ -1,4 +1,4 @@
-import request from 'supertest';
+import request, { Response, Test } from 'supertest';
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { faker } from '@faker-js/faker';
@@ -10,11 +10,16 @@ import { getTestData, setTestData } from './test.utils';
 describe('01 - User tests', function () {
     const agent = request.agent(infra.app);
 
+    // Every route requires the client API key; the user-specific routes
+    // (everything except create/login) additionally require the access
+    // token obtained from login.
+    const withApiKey = (req: Test): Test => req.set('x-api-key', process.env.CLIENT_API_KEY as string);
+    const withAuth = (req: Test): Test => withApiKey(req).set('Authorization', `Bearer ${getTestData('accessToken')}`);
+
     it('01:01 -> Create user', function (done) {
         loadUserCreateModel();
         const createModel = getTestData('userCreateModel');
-        agent
-            .post('/api/v1/users/')
+        withApiKey(agent.post('/api/v1/users/'))
             .set('Content-Type', 'application/json')
             .send(createModel)
             .expect((response) => {
@@ -25,9 +30,22 @@ describe('01 - User tests', function () {
             .expect(201, done);
     });
 
-    it('01:02 -> Get user by id', function (done) {
-        agent
-            .get(`/api/v1/users/${getTestData('userId_1')}`)
+    it('01:02 -> Login', function (done) {
+        const createModel = getTestData('userCreateModel');
+        withApiKey(agent.post('/api/v1/auth/login'))
+            .send({
+                UserNameOrEmail : createModel.Email,
+                Password        : createModel.Password,
+            })
+            .expect((response) => {
+                expect(response.body.Data).to.have.property('AccessToken');
+                setTestData(response.body.Data.AccessToken, 'accessToken');
+            })
+            .expect(200, done);
+    });
+
+    it('01:03 -> Get user by id', function (done) {
+        withAuth(agent.get(`/api/v1/users/${getTestData('userId_1')}`))
             .expect((response) => {
                 expectUserProperties(response);
                 expectUserPropertyValues(response);
@@ -35,10 +53,9 @@ describe('01 - User tests', function () {
             .expect(200, done);
     });
 
-    it('01:03 -> Search users', function (done) {
+    it('01:04 -> Search users', function (done) {
         const firstName = getTestData('userCreateModel').FirstName;
-        agent
-            .get(`/api/v1/users/search?firstName=${firstName}`)
+        withAuth(agent.get(`/api/v1/users/search?firstName=${firstName}`))
             .expect((response) => {
                 expect(response.body.Data.Users).to.have.property('TotalCount');
                 expect(response.body.Data.Users).to.have.property('RetrievedCount');
@@ -51,11 +68,10 @@ describe('01 - User tests', function () {
             .expect(200, done);
     });
 
-    it('01:04 -> Update user', function (done) {
+    it('01:05 -> Update user', function (done) {
         loadUserUpdateModel();
         const updateModel = getTestData('userUpdateModel');
-        agent
-            .put(`/api/v1/users/${getTestData('userId_1')}`)
+        withAuth(agent.put(`/api/v1/users/${getTestData('userId_1')}`))
             .send(updateModel)
             .expect((response) => {
                 expectUserProperties(response);
@@ -65,10 +81,9 @@ describe('01 - User tests', function () {
             .expect(200, done);
     });
 
-    it('01:05 -> Negative - Create user with duplicate email', function (done) {
+    it('01:06 -> Negative - Create user with duplicate email', function (done) {
         const createModel = getTestData('userCreateModel');
-        agent
-            .post('/api/v1/users/')
+        withApiKey(agent.post('/api/v1/users/'))
             .send(createModel)
             .expect((response) => {
                 expect(response.body).to.have.property('Status');
@@ -77,13 +92,12 @@ describe('01 - User tests', function () {
             .expect(409, done);
     });
 
-    it('01:06 -> Negative - Create user without a password', function (done) {
+    it('01:07 -> Negative - Create user without a password', function (done) {
         const invalidModel = {
             FirstName : faker.person.firstName(),
             Email     : faker.internet.email().toLowerCase(),
         };
-        agent
-            .post('/api/v1/users/')
+        withApiKey(agent.post('/api/v1/users/'))
             .send(invalidModel)
             .expect((response) => {
                 expect(response.body).to.have.property('Status');
@@ -92,9 +106,8 @@ describe('01 - User tests', function () {
             .expect(422, done);
     });
 
-    it('01:07 -> Negative - Get user by id - malformed id', function (done) {
-        agent
-            .get('/api/v1/users/not-a-uuid')
+    it('01:08 -> Negative - Get user by id - malformed id', function (done) {
+        withAuth(agent.get('/api/v1/users/not-a-uuid'))
             .expect((response) => {
                 expect(response.body).to.have.property('Status');
                 expect(response.body.Status).to.equal('failure');
@@ -102,9 +115,27 @@ describe('01 - User tests', function () {
             .expect(422, done);
     });
 
-    it('01:08 -> Delete user', function (done) {
+    it('01:09 -> Negative - Missing client API key', function (done) {
         agent
-            .delete(`/api/v1/users/${getTestData('userId_1')}`)
+            .get(`/api/v1/users/${getTestData('userId_1')}`)
+            .expect((response) => {
+                expect(response.body).to.have.property('Status');
+                expect(response.body.Status).to.equal('failure');
+            })
+            .expect(401, done);
+    });
+
+    it('01:10 -> Negative - Missing access token', function (done) {
+        withApiKey(agent.get(`/api/v1/users/${getTestData('userId_1')}`))
+            .expect((response) => {
+                expect(response.body).to.have.property('Status');
+                expect(response.body.Status).to.equal('failure');
+            })
+            .expect(401, done);
+    });
+
+    it('01:11 -> Delete user', function (done) {
+        withAuth(agent.delete(`/api/v1/users/${getTestData('userId_1')}`))
             .expect((response) => {
                 expect(response.body).to.have.property('Status');
                 expect(response.body.Status).to.equal('success');
@@ -113,9 +144,8 @@ describe('01 - User tests', function () {
             .expect(200, done);
     });
 
-    it('01:09 -> Negative - Get deleted user by id', function (done) {
-        agent
-            .get(`/api/v1/users/${getTestData('userId_1')}`)
+    it('01:12 -> Negative - Get deleted user by id', function (done) {
+        withAuth(agent.get(`/api/v1/users/${getTestData('userId_1')}`))
             .expect((response) => {
                 expect(response.body).to.have.property('Status');
                 expect(response.body.Status).to.equal('failure');
@@ -126,11 +156,11 @@ describe('01 - User tests', function () {
 
 ///////////////////////////////////////////////////////////////////////////
 
-function setUserId(response, key: string) {
+function setUserId(response: Response, key: string) {
     setTestData(response.body.Data.User.id, key);
 }
 
-function expectUserProperties(response) {
+function expectUserProperties(response: Response) {
     const user = response.body.Data.User;
     expect(user).to.have.property('id');
     expect(user).to.have.property('FirstName');
@@ -142,7 +172,7 @@ function expectUserProperties(response) {
     expect(user).to.not.have.property('Password');
 }
 
-function expectUserPropertyValues(response) {
+function expectUserPropertyValues(response: Response) {
     const model = getTestData('userCreateModel');
     const user = response.body.Data.User;
     expect(user.FirstName).to.equal(model.FirstName);

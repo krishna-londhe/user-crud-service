@@ -1,38 +1,24 @@
 {
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
             "type": "node",
             "request": "launch",
-            "name": "user-crud-service: Debug server.ts (ts-node)",
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/src/server.ts",
             "runtimeArgs": [
                 "-r",
-                "ts-node/register/transpile-only",
-                "-r",
-                "dotenv/config"
+                "ts-node/register/transpile-only"
             ],
-            "args": [
-                "${workspaceFolder}/user-crud-service/src/server.ts"
-            ],
-            "cwd": "${workspaceFolder}/user-crud-service",
+            "cwd": "${workspaceFolder}",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "console": "integratedTerminal"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "user-crud-service: Debug dist/server.js (compiled)",
-            "program": "${workspaceFolder}/user-crud-service/dist/server.js",
-            "cwd": "${workspaceFolder}/user-crud-service",
-            "outFiles": [
-                "${workspaceFolder}/user-crud-service/dist/**/*.js"
-            ],
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
         }
     ]
 }

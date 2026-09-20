@@ -1,5 +1,6 @@
 import { UserDomainModel } from '../../../domain.types/users/user.domain.model';
 import { UserDto } from '../../../domain.types/users/user.dto';
+import { UserCredentials } from '../../../domain.types/users/user.credentials';
 import { UserSearchFilters, UserSearchResults } from '../../../domain.types/users/user.search.types';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 
@@ -10,6 +11,8 @@ export interface IUserRepo {
     getById(id: uuid): Promise<UserDto>;
 
     getByEmail(email: string): Promise<UserDto>;
+
+    getCredentialsByIdentifier(userNameOrEmail: string): Promise<UserCredentials>;
 
     exists(email: string, phone?: string, userName?: string): Promise<boolean>;
 

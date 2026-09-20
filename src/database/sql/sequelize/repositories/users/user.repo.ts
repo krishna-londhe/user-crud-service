@@ -6,6 +6,7 @@ import { Logger } from '../../../../../common/logger';
 import { ApiError } from '../../../../../common/api.error';
 import { UserDomainModel } from '../../../../../domain.types/users/user.domain.model';
 import { UserDto } from '../../../../../domain.types/users/user.dto';
+import { UserCredentials } from '../../../../../domain.types/users/user.credentials';
 import { UserSearchFilters, UserSearchResults } from '../../../../../domain.types/users/user.search.types';
 import { uuid } from '../../../../../domain.types/miscellaneous/system.types';
 
@@ -46,6 +47,27 @@ export class UserRepo implements IUserRepo {
         try {
             const user = await User.findOne({ where: { Email: email } });
             return UserMapper.toDto(user);
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    getCredentialsByIdentifier = async (userNameOrEmail: string): Promise<UserCredentials> => {
+        try {
+            const user = await User.findOne({
+                where: {
+                    [Op.or]: [{ Email: userNameOrEmail }, { UserName: userNameOrEmail }],
+                },
+            });
+            if (user == null) {
+                return null;
+            }
+            return {
+                id       : user.id,
+                Password : user.Password,
+                IsActive : user.IsActive,
+            };
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);

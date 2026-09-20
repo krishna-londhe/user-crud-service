@@ -18,6 +18,11 @@ export interface DatabaseConfig {
     };
 }
 
+export interface AuthConfig {
+    AccessTokenSecret          : string;
+    AccessTokenExpiresInSeconds: number;
+}
+
 export class ConfigurationManager {
 
     static DatabaseConfig(): DatabaseConfig {
@@ -40,6 +45,17 @@ export class ConfigurationManager {
 
     static Port(): number {
         return parseInt(process.env.PORT || '3000', 10);
+    }
+
+    static AuthConfig(): AuthConfig {
+        return {
+            AccessTokenSecret           : process.env.USER_ACCESS_TOKEN_SECRET || 'dev-access-token-secret',
+            AccessTokenExpiresInSeconds : parseInt(process.env.ACCESS_TOKEN_EXPIRES_IN_SECONDS || '3600', 10),
+        };
+    }
+
+    static ClientApiKey(): string {
+        return process.env.CLIENT_API_KEY || '';
     }
 
 }
